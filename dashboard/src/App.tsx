@@ -9,6 +9,7 @@ import { AppSidebar } from "@/components/app-sidebar";
 import { Toaster } from "@/components/ui/sonner";
 import Home from "@/pages/Home";
 import Skills from "@/pages/Skills";
+import SkillDetail from "@/pages/SkillDetail";
 
 export default function App() {
   return (
@@ -22,6 +23,8 @@ export default function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/skills" element={<Skills />} />
+            <Route path="/skills/new" element={<SkillDetail />} />
+            <Route path="/skills/:name" element={<SkillDetail />} />
           </Routes>
         </SidebarInset>
         <Toaster />
