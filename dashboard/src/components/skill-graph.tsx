@@ -11,10 +11,11 @@ import type { Graph } from "@/types";
 
 type Props = {
   graph: Graph;
-  onNodeClick?: (name: string) => void;
+  onNodeClick?: (name: string, position: { x: number; y: number }) => void;
+  onPaneClick?: () => void;
 };
 
-export function SkillGraph({ graph, onNodeClick }: Props) {
+export function SkillGraph({ graph, onNodeClick, onPaneClick }: Props) {
   const flowNodes: Node[] = useMemo(() => {
     const angleStep = (2 * Math.PI) / Math.max(graph.nodes.length, 1);
     const radius = Math.max(200, graph.nodes.length * 30);
@@ -61,9 +62,11 @@ export function SkillGraph({ graph, onNodeClick }: Props) {
   );
 
   const handleNodeClick = useCallback(
-    (_: React.MouseEvent, node: Node) => {
+    (event: React.MouseEvent, node: Node) => {
       const graphNode = graph.nodes.find((n) => n.id === node.id);
-      if (graphNode && onNodeClick) onNodeClick(graphNode.name);
+      if (graphNode && onNodeClick) {
+        onNodeClick(graphNode.name, { x: event.clientX, y: event.clientY });
+      }
     },
     [graph.nodes, onNodeClick],
   );
@@ -73,6 +76,7 @@ export function SkillGraph({ graph, onNodeClick }: Props) {
       nodes={flowNodes}
       edges={flowEdges}
       onNodeClick={handleNodeClick}
+      onPaneClick={onPaneClick}
       onNodesChange={() => {}}
       onEdgesChange={() => {}}
       fitView

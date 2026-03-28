@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Layers } from "lucide-react";
 import { api } from "@/api/client";
 import { SkillGraph } from "@/components/skill-graph";
-import { SkillDetailSheet } from "@/components/skill-detail-sheet";
+import { SkillCard } from "@/components/skill-card";
 import { StatBadge } from "@/components/stat-badge";
 import { EmptyState } from "@/components/empty-state";
 import { GraphSkeleton } from "@/components/skeleton-loaders";
@@ -13,7 +13,7 @@ export default function Home() {
   const [graph, setGraph] = useState<Graph>({ nodes: [], edges: [] });
   const [loading, setLoading] = useState(true);
   const [selectedSkill, setSelectedSkill] = useState<Skill | null>(null);
-  const [sheetOpen, setSheetOpen] = useState(false);
+  const [cardPosition, setCardPosition] = useState({ x: 0, y: 0 });
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -23,10 +23,17 @@ export default function Home() {
       .finally(() => setLoading(false));
   }, []);
 
-  async function handleNodeClick(name: string) {
+  async function handleNodeClick(
+    name: string,
+    position: { x: number; y: number },
+  ) {
+    setCardPosition(position);
     const skill = await api.getSkill(name);
     setSelectedSkill(skill);
-    setSheetOpen(true);
+  }
+
+  function handleClose() {
+    setSelectedSkill(null);
   }
 
   const stats = {
@@ -55,7 +62,7 @@ export default function Home() {
         </div>
       </div>
 
-      <div className="flex-1">
+      <div className="flex-1 relative">
         {loading ? (
           <GraphSkeleton />
         ) : graph.nodes.length === 0 ? (
@@ -69,15 +76,21 @@ export default function Home() {
             }}
           />
         ) : (
-          <SkillGraph graph={graph} onNodeClick={handleNodeClick} />
+          <SkillGraph
+            graph={graph}
+            onNodeClick={handleNodeClick}
+            onPaneClick={handleClose}
+          />
+        )}
+
+        {selectedSkill && (
+          <SkillCard
+            skill={selectedSkill}
+            position={cardPosition}
+            onClose={handleClose}
+          />
         )}
       </div>
-
-      <SkillDetailSheet
-        skill={selectedSkill}
-        open={sheetOpen}
-        onOpenChange={setSheetOpen}
-      />
     </div>
   );
 }
