@@ -7,26 +7,14 @@ import {
   Controls,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import type { Graph } from "../types.js";
-
-const CATEGORY_COLORS: Record<string, string> = {
-  development: "#6366f1",
-  writing: "#22c55e",
-  testing: "#f59e0b",
-  devops: "#ef4444",
-  default: "#8b5cf6",
-};
-
-function getCategoryColor(category: string | null): string {
-  return CATEGORY_COLORS[category ?? ""] ?? CATEGORY_COLORS.default;
-}
+import type { Graph } from "@/types";
 
 type Props = {
   graph: Graph;
   onNodeClick?: (name: string) => void;
 };
 
-export default function SkillGraph({ graph, onNodeClick }: Props) {
+export function SkillGraph({ graph, onNodeClick }: Props) {
   const flowNodes: Node[] = useMemo(() => {
     const angleStep = (2 * Math.PI) / Math.max(graph.nodes.length, 1);
     const radius = Math.max(200, graph.nodes.length * 30);
@@ -39,11 +27,12 @@ export default function SkillGraph({ graph, onNodeClick }: Props) {
       },
       data: { label: node.displayName },
       style: {
-        background: getCategoryColor(node.category),
+        background: `var(--chart-${getCategoryIndex(node.category)})`,
         color: "white",
         border: "none",
-        borderRadius: "20px",
+        borderRadius: "var(--radius-xl)",
         padding: "6px 14px",
+        fontFamily: "var(--font-sans)",
         fontSize: "12px",
         fontWeight: 500,
         opacity: node.enabled ? 1 : 0.5,
@@ -59,7 +48,10 @@ export default function SkillGraph({ graph, onNodeClick }: Props) {
         source: edge.source,
         target: edge.target,
         style: {
-          stroke: edge.type === "explicit" ? "#6366f180" : "#ffffff20",
+          stroke:
+            edge.type === "explicit"
+              ? "oklch(0.55 0.22 265 / 50%)"
+              : "oklch(0.97 0 0 / 12%)",
           strokeWidth: edge.type === "explicit" ? 2 : 1,
           strokeDasharray: edge.type === "tag" ? "4" : undefined,
         },
@@ -86,8 +78,18 @@ export default function SkillGraph({ graph, onNodeClick }: Props) {
       fitView
       proOptions={{ hideAttribution: true }}
     >
-      <Background color="#2a2a3e" gap={20} />
-      <Controls style={{ background: "#1a1a2e", borderColor: "#2a2a3e" }} />
+      <Background color="oklch(0.25 0.015 265)" gap={20} />
+      <Controls className="[&>button]:bg-card [&>button]:border-border [&>button]:text-foreground" />
     </ReactFlow>
   );
+}
+
+function getCategoryIndex(category: string | null): number {
+  const map: Record<string, number> = {
+    development: 1,
+    writing: 2,
+    testing: 3,
+    devops: 4,
+  };
+  return map[category ?? ""] ?? 5;
 }
