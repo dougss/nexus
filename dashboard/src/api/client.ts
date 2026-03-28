@@ -1,4 +1,4 @@
-import type { Skill, Graph } from "../types.js";
+import type { Skill, Graph } from "@/types";
 
 const BASE = "/api";
 
