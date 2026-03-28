@@ -89,9 +89,9 @@ export function SkillCard({ skill, position, onClose }: Props) {
       <Separator className="mt-3" />
 
       {/* Content preview */}
-      <ScrollArea className="h-[200px] px-4 py-3">
-        <div className="overflow-hidden w-full">
-          <article className="prose prose-invert prose-xs max-w-none break-words overflow-hidden prose-headings:text-foreground prose-headings:font-semibold prose-headings:text-xs prose-p:text-muted-foreground prose-p:text-xs prose-strong:text-foreground prose-code:text-primary prose-code:bg-secondary prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:text-xs prose-code:before:content-none prose-code:after:content-none prose-pre:bg-secondary prose-pre:border prose-pre:border-border prose-pre:text-xs prose-pre:overflow-x-auto prose-pre:max-w-full prose-li:text-muted-foreground prose-li:text-xs prose-a:text-primary prose-blockquote:border-primary prose-blockquote:text-muted-foreground prose-hr:border-border">
+      <ScrollArea className="h-[200px]">
+        <div className="px-4 py-3" style={{ maxWidth: "calc(380px - 2rem)" }}>
+          <article className="prose prose-invert prose-xs max-w-none break-words prose-headings:text-foreground prose-headings:font-semibold prose-headings:text-xs prose-p:text-muted-foreground prose-p:text-xs prose-strong:text-foreground prose-code:text-primary prose-code:bg-secondary prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:text-xs prose-code:break-all prose-code:before:content-none prose-code:after:content-none prose-pre:bg-secondary prose-pre:border prose-pre:border-border prose-pre:text-xs prose-pre:overflow-x-auto prose-pre:[word-break:break-all] prose-pre:[white-space:pre-wrap] prose-li:text-muted-foreground prose-li:text-xs prose-a:text-primary prose-blockquote:border-primary prose-blockquote:text-muted-foreground prose-hr:border-border [&_pre_code]:break-all [&_pre_code]:whitespace-pre-wrap">
             <ReactMarkdown>{skill.content}</ReactMarkdown>
           </article>
         </div>
