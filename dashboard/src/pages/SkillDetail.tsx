@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, Trash2 } from "lucide-react";
+import { ArrowLeft, Trash2, Pencil, Eye } from "lucide-react";
 import { toast } from "sonner";
+import ReactMarkdown from "react-markdown";
 import { api } from "@/api/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,6 +31,7 @@ export default function SkillDetail() {
   const [loading, setLoading] = useState(!isNew);
   const [categories, setCategories] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
+  const [mode, setMode] = useState<"view" | "edit">(isNew ? "edit" : "view");
 
   // Form state
   const [formName, setFormName] = useState("");
@@ -92,6 +94,7 @@ export default function SkillDetail() {
       if (skill) {
         await api.updateSkill(skill.name, data);
         toast.success("Skill updated");
+        setMode("view");
       } else {
         await api.createSkill(data);
         toast.success("Skill created");
@@ -155,6 +158,18 @@ export default function SkillDetail() {
           )}
         </div>
         <div className="flex gap-2">
+          {skill && mode === "view" && (
+            <Button variant="outline" size="sm" onClick={() => setMode("edit")}>
+              <Pencil className="mr-1 size-4" />
+              Edit
+            </Button>
+          )}
+          {skill && mode === "edit" && (
+            <Button variant="outline" size="sm" onClick={() => setMode("view")}>
+              <Eye className="mr-1 size-4" />
+              View
+            </Button>
+          )}
           {skill && (
             <Button variant="destructive" size="sm" onClick={handleDelete}>
               <Trash2 className="mr-1 size-4" />
@@ -164,136 +179,252 @@ export default function SkillDetail() {
         </div>
       </div>
 
-      {/* Form */}
-      <ScrollArea className="flex-1">
-        <form onSubmit={handleSave} className="max-w-3xl mx-auto p-6 space-y-6">
-          {/* Identity */}
-          <div>
-            <h2 className="text-sm font-medium text-muted-foreground mb-3">
-              Identity
-            </h2>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="name">Name (slug)</Label>
-                <Input
-                  id="name"
-                  value={formName}
-                  onChange={(e) => setFormName(e.target.value)}
-                  disabled={!!skill}
-                  required
-                  placeholder="tdd-workflow"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="displayName">Display Name</Label>
-                <Input
-                  id="displayName"
-                  value={displayName}
-                  onChange={(e) => setDisplayName(e.target.value)}
-                  required
-                  placeholder="TDD Workflow"
-                />
-              </div>
-            </div>
-            <div className="space-y-2 mt-4">
-              <Label htmlFor="description">Description</Label>
+      {/* Content */}
+      {mode === "view" && skill ? (
+        <ViewMode skill={skill} />
+      ) : (
+        <EditMode
+          isNew={isNew}
+          skill={skill}
+          saving={saving}
+          categories={categories}
+          formName={formName}
+          setFormName={setFormName}
+          displayName={displayName}
+          setDisplayName={setDisplayName}
+          description={description}
+          setDescription={setDescription}
+          content={content}
+          setContent={setContent}
+          category={category}
+          setCategory={setCategory}
+          tagsStr={tagsStr}
+          setTagsStr={setTagsStr}
+          model={model}
+          setModel={setModel}
+          enabled={enabled}
+          setEnabled={setEnabled}
+          onSave={handleSave}
+          onCancel={() => (skill ? setMode("view") : navigate("/skills"))}
+        />
+      )}
+    </div>
+  );
+}
+
+/* ── View Mode ─────────────────────────────────────────── */
+
+function ViewMode({ skill }: { skill: Skill }) {
+  return (
+    <ScrollArea className="flex-1">
+      <div className="max-w-3xl mx-auto p-6 space-y-6">
+        {/* Meta */}
+        <div className="flex flex-wrap items-center gap-3">
+          <code className="font-mono text-sm text-muted-foreground">
+            {skill.name}
+          </code>
+          {skill.category && (
+            <Badge variant="secondary">{skill.category}</Badge>
+          )}
+          {(skill.tags ?? []).map((tag) => (
+            <Badge key={tag} variant="outline">
+              {tag}
+            </Badge>
+          ))}
+          {skill.model && (
+            <Badge variant="outline" className="font-mono">
+              {skill.model}
+            </Badge>
+          )}
+        </div>
+
+        <p className="text-muted-foreground">{skill.description}</p>
+
+        <Separator />
+
+        {/* Markdown rendered content */}
+        <article className="prose prose-invert prose-sm max-w-none prose-headings:text-foreground prose-headings:font-semibold prose-p:text-muted-foreground prose-strong:text-foreground prose-code:text-primary prose-code:bg-secondary prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:before:content-none prose-code:after:content-none prose-pre:bg-secondary prose-pre:border prose-pre:border-border prose-li:text-muted-foreground prose-a:text-primary prose-blockquote:border-primary prose-blockquote:text-muted-foreground prose-hr:border-border">
+          <ReactMarkdown>{skill.content}</ReactMarkdown>
+        </article>
+      </div>
+    </ScrollArea>
+  );
+}
+
+/* ── Edit Mode ─────────────────────────────────────────── */
+
+function EditMode({
+  isNew,
+  skill,
+  saving,
+  categories,
+  formName,
+  setFormName,
+  displayName,
+  setDisplayName,
+  description,
+  setDescription,
+  content,
+  setContent,
+  category,
+  setCategory,
+  tagsStr,
+  setTagsStr,
+  model,
+  setModel,
+  enabled,
+  setEnabled,
+  onSave,
+  onCancel,
+}: {
+  isNew: boolean;
+  skill: Skill | null;
+  saving: boolean;
+  categories: string[];
+  formName: string;
+  setFormName: (v: string) => void;
+  displayName: string;
+  setDisplayName: (v: string) => void;
+  description: string;
+  setDescription: (v: string) => void;
+  content: string;
+  setContent: (v: string) => void;
+  category: string;
+  setCategory: (v: string) => void;
+  tagsStr: string;
+  setTagsStr: (v: string) => void;
+  model: string;
+  setModel: (v: string) => void;
+  enabled: boolean;
+  setEnabled: (v: boolean) => void;
+  onSave: (e: React.FormEvent) => void;
+  onCancel: () => void;
+}) {
+  return (
+    <ScrollArea className="flex-1">
+      <form onSubmit={onSave} className="max-w-3xl mx-auto p-6 space-y-6">
+        {/* Identity */}
+        <div>
+          <h2 className="text-sm font-medium text-muted-foreground mb-3">
+            Identity
+          </h2>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="name">Name (slug)</Label>
               <Input
-                id="description"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
+                id="name"
+                value={formName}
+                onChange={(e) => setFormName(e.target.value)}
+                disabled={!!skill}
                 required
-                placeholder="One-line description"
+                placeholder="tdd-workflow"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="displayName">Display Name</Label>
+              <Input
+                id="displayName"
+                value={displayName}
+                onChange={(e) => setDisplayName(e.target.value)}
+                required
+                placeholder="TDD Workflow"
               />
             </div>
           </div>
-
-          <Separator />
-
-          {/* Metadata */}
-          <div>
-            <h2 className="text-sm font-medium text-muted-foreground mb-3">
-              Metadata
-            </h2>
-            <div className="grid grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <Label>Category</Label>
-                <Select value={category} onValueChange={setCategory}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {categories.map((cat) => (
-                      <SelectItem key={cat} value={cat}>
-                        {cat}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="tags">Tags (comma-separated)</Label>
-                <Input
-                  id="tags"
-                  value={tagsStr}
-                  onChange={(e) => setTagsStr(e.target.value)}
-                  placeholder="testing, quality"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="model">Model</Label>
-                <Input
-                  id="model"
-                  value={model}
-                  onChange={(e) => setModel(e.target.value)}
-                  placeholder="optional"
-                />
-              </div>
-            </div>
-            <div className="flex items-center gap-2 mt-4">
-              <Checkbox
-                id="enabled"
-                checked={enabled}
-                onCheckedChange={(checked) => setEnabled(checked === true)}
-              />
-              <Label htmlFor="enabled">Enabled</Label>
-            </div>
-          </div>
-
-          <Separator />
-
-          {/* Content */}
-          <div>
-            <h2 className="text-sm font-medium text-muted-foreground mb-3">
-              Content
-            </h2>
-            <Textarea
-              id="content"
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
+          <div className="space-y-2 mt-4">
+            <Label htmlFor="description">Description</Label>
+            <Input
+              id="description"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
               required
-              rows={20}
-              className="font-mono text-sm"
-              placeholder={
-                "## Steps\n1. Write failing test\n2. Implement\n3. Refactor"
-              }
+              placeholder="One-line description"
             />
           </div>
+        </div>
 
-          {/* Actions */}
-          <div className="flex justify-end gap-2 pb-6">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => navigate("/skills")}
-            >
-              Cancel
-            </Button>
-            <Button type="submit" disabled={saving}>
-              {saving ? "Saving..." : skill ? "Save Changes" : "Create Skill"}
-            </Button>
+        <Separator />
+
+        {/* Metadata */}
+        <div>
+          <h2 className="text-sm font-medium text-muted-foreground mb-3">
+            Metadata
+          </h2>
+          <div className="grid grid-cols-3 gap-4">
+            <div className="space-y-2">
+              <Label>Category</Label>
+              <Select value={category} onValueChange={setCategory}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {categories.map((cat) => (
+                    <SelectItem key={cat} value={cat}>
+                      {cat}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="tags">Tags (comma-separated)</Label>
+              <Input
+                id="tags"
+                value={tagsStr}
+                onChange={(e) => setTagsStr(e.target.value)}
+                placeholder="testing, quality"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="model">Model</Label>
+              <Input
+                id="model"
+                value={model}
+                onChange={(e) => setModel(e.target.value)}
+                placeholder="optional"
+              />
+            </div>
           </div>
-        </form>
-      </ScrollArea>
-    </div>
+          <div className="flex items-center gap-2 mt-4">
+            <Checkbox
+              id="enabled"
+              checked={enabled}
+              onCheckedChange={(checked) => setEnabled(checked === true)}
+            />
+            <Label htmlFor="enabled">Enabled</Label>
+          </div>
+        </div>
+
+        <Separator />
+
+        {/* Content */}
+        <div>
+          <h2 className="text-sm font-medium text-muted-foreground mb-3">
+            Content
+          </h2>
+          <Textarea
+            id="content"
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            required
+            rows={20}
+            className="font-mono text-sm"
+            placeholder={
+              "## Steps\n1. Write failing test\n2. Implement\n3. Refactor"
+            }
+          />
+        </div>
+
+        {/* Actions */}
+        <div className="flex justify-end gap-2 pb-6">
+          <Button type="button" variant="outline" onClick={onCancel}>
+            Cancel
+          </Button>
+          <Button type="submit" disabled={saving}>
+            {saving ? "Saving..." : skill ? "Save Changes" : "Create Skill"}
+          </Button>
+        </div>
+      </form>
+    </ScrollArea>
   );
 }
