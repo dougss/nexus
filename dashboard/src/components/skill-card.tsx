@@ -49,7 +49,7 @@ export function SkillCard({ skill, position, onClose }: Props) {
   return (
     <div
       ref={cardRef}
-      className="fixed z-50 w-[380px] rounded-xl border border-border bg-card shadow-2xl shadow-black/40 opacity-0 transition-opacity duration-150"
+      className="fixed z-50 w-[380px] max-w-[380px] overflow-hidden rounded-xl border border-border bg-card shadow-2xl shadow-black/40 opacity-0 transition-opacity duration-150"
       style={{ left: position.x, top: position.y }}
     >
       {/* Header */}
@@ -90,9 +90,11 @@ export function SkillCard({ skill, position, onClose }: Props) {
 
       {/* Content preview */}
       <ScrollArea className="h-[200px] px-4 py-3">
-        <article className="prose prose-invert prose-xs max-w-none prose-headings:text-foreground prose-headings:font-semibold prose-headings:text-xs prose-p:text-muted-foreground prose-p:text-xs prose-strong:text-foreground prose-code:text-primary prose-code:bg-secondary prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:text-xs prose-code:before:content-none prose-code:after:content-none prose-pre:bg-secondary prose-pre:border prose-pre:border-border prose-pre:text-xs prose-li:text-muted-foreground prose-li:text-xs prose-a:text-primary prose-blockquote:border-primary prose-blockquote:text-muted-foreground prose-hr:border-border">
-          <ReactMarkdown>{skill.content}</ReactMarkdown>
-        </article>
+        <div className="overflow-hidden w-full">
+          <article className="prose prose-invert prose-xs max-w-none break-words overflow-hidden prose-headings:text-foreground prose-headings:font-semibold prose-headings:text-xs prose-p:text-muted-foreground prose-p:text-xs prose-strong:text-foreground prose-code:text-primary prose-code:bg-secondary prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:text-xs prose-code:before:content-none prose-code:after:content-none prose-pre:bg-secondary prose-pre:border prose-pre:border-border prose-pre:text-xs prose-pre:overflow-x-auto prose-pre:max-w-full prose-li:text-muted-foreground prose-li:text-xs prose-a:text-primary prose-blockquote:border-primary prose-blockquote:text-muted-foreground prose-hr:border-border">
+            <ReactMarkdown>{skill.content}</ReactMarkdown>
+          </article>
+        </div>
       </ScrollArea>
 
       <Separator />
