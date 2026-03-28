@@ -1,18 +1,27 @@
 import { Routes, Route } from "react-router-dom";
-import Sidebar from "./components/Sidebar.js";
-import Home from "./pages/Home.js";
-import Skills from "./pages/Skills.js";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { AppSidebar } from "@/components/app-sidebar";
+import { Toaster } from "@/components/ui/sonner";
+import Home from "@/pages/Home";
+import Skills from "@/pages/Skills";
 
 export default function App() {
   return (
-    <div className="flex h-screen">
-      <Sidebar />
-      <main className="flex-1 flex flex-col overflow-hidden">
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/skills" element={<Skills />} />
-        </Routes>
-      </main>
-    </div>
+    <TooltipProvider>
+      <SidebarProvider>
+        <AppSidebar />
+        <main className="flex-1 flex flex-col overflow-hidden">
+          <div className="flex items-center gap-2 px-4 py-2 md:hidden">
+            <SidebarTrigger />
+          </div>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/skills" element={<Skills />} />
+          </Routes>
+        </main>
+        <Toaster />
+      </SidebarProvider>
+    </TooltipProvider>
   );
 }
