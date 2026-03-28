@@ -1,5 +1,9 @@
 import { Routes, Route } from "react-router-dom";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import {
+  SidebarProvider,
+  SidebarInset,
+  SidebarTrigger,
+} from "@/components/ui/sidebar";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AppSidebar } from "@/components/app-sidebar";
 import { Toaster } from "@/components/ui/sonner";
@@ -11,7 +15,7 @@ export default function App() {
     <TooltipProvider>
       <SidebarProvider>
         <AppSidebar />
-        <main className="flex-1 flex flex-col overflow-hidden">
+        <SidebarInset className="flex flex-col overflow-hidden">
           <div className="flex items-center gap-2 px-4 py-2 md:hidden">
             <SidebarTrigger />
           </div>
@@ -19,7 +23,7 @@ export default function App() {
             <Route path="/" element={<Home />} />
             <Route path="/skills" element={<Skills />} />
           </Routes>
-        </main>
+        </SidebarInset>
         <Toaster />
       </SidebarProvider>
     </TooltipProvider>
