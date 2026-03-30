@@ -134,3 +134,40 @@ export async function getGraph(): Promise<Graph> {
 
   return { nodes, edges };
 }
+
+export async function traverseExtends(skillName: string) {
+  const db = getDb();
+
+  const [start] = await db
+    .select()
+    .from(skills)
+    .where(eq(skills.name, skillName))
+    .limit(1);
+  if (!start) return [];
+
+  const chain = [start];
+  const visited = new Set<string>([start.id]);
+  let currentId = start.id;
+
+  while (true) {
+    const [next] = await db
+      .select({ skill: skills })
+      .from(skillRelations)
+      .innerJoin(skills, eq(skills.id, skillRelations.targetId))
+      .where(
+        and(
+          eq(skillRelations.sourceId, currentId),
+          eq(skillRelations.relationType, "extends"),
+        ),
+      )
+      .limit(1);
+
+    if (!next || visited.has(next.skill.id)) break;
+
+    chain.push(next.skill);
+    visited.add(next.skill.id);
+    currentId = next.skill.id;
+  }
+
+  return chain;
+}
