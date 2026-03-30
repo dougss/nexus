@@ -7,7 +7,20 @@ import {
   integer,
   boolean,
   uniqueIndex,
+  customType,
 } from "drizzle-orm/pg-core";
+
+const vector = customType<{ data: number[]; driverParam: string }>({
+  dataType() {
+    return "vector(768)";
+  },
+  toDriver(value: number[]): string {
+    return `[${value.join(",")}]`;
+  },
+  fromDriver(value: unknown): number[] {
+    return JSON.parse(value as string);
+  },
+});
 
 export const skills = pgTable("skills", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -21,6 +34,7 @@ export const skills = pgTable("skills", {
   model: text("model"),
   enabled: boolean("enabled").notNull().default(true),
   version: integer("version").notNull().default(1),
+  embedding: vector("embedding"),
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
     .defaultNow(),
