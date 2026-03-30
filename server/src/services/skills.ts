@@ -1,6 +1,7 @@
 import { eq, ilike, or, arrayContains, type SQL } from "drizzle-orm";
 import { getDb } from "../db/client.js";
 import { skills } from "../db/schema.js";
+import { generateEmbedding } from "./embeddings.js";
 
 type CreateSkillInput = {
   name: string;
@@ -108,4 +109,58 @@ export async function deleteSkill(name: string) {
     .where(eq(skills.name, name))
     .returning();
   return !!deleted;
+}
+
+type UpsertSkillInput = {
+  name: string;
+  displayName: string;
+  description: string;
+  content: string;
+  category?: string;
+  tags?: string[];
+  model?: string;
+};
+
+export async function upsertSkill(input: UpsertSkillInput) {
+  const db = getDb();
+
+  // Generate embedding from content
+  let embedding: number[] | null = null;
+  try {
+    const textForEmbedding = `${input.displayName}\n${input.description}\n${input.content}`;
+    embedding = await generateEmbedding(textForEmbedding);
+  } catch (e) {
+    console.error("Embedding generation failed, saving without embedding:", e);
+  }
+
+  const values = {
+    name: input.name,
+    displayName: input.displayName,
+    description: input.description,
+    content: input.content,
+    category: input.category,
+    tags: input.tags ?? [],
+    model: input.model,
+    embedding,
+    updatedAt: new Date(),
+  };
+
+  const [skill] = await db
+    .insert(skills)
+    .values(values)
+    .onConflictDoUpdate({
+      target: skills.name,
+      set: {
+        displayName: values.displayName,
+        description: values.description,
+        content: values.content,
+        category: values.category,
+        tags: values.tags,
+        model: values.model,
+        embedding: values.embedding,
+        updatedAt: values.updatedAt,
+      },
+    })
+    .returning();
+  return skill;
 }

@@ -7,6 +7,7 @@ import {
   searchSkills,
   updateSkill,
   deleteSkill,
+  upsertSkill,
 } from "../../src/services/skills.js";
 
 beforeEach(async () => {
@@ -188,5 +189,35 @@ describe("deleteSkill", () => {
   it("returns false for non-existent skill", async () => {
     const deleted = await deleteSkill("nope");
     expect(deleted).toBe(false);
+  });
+});
+
+describe("upsertSkill", () => {
+  it("creates a skill if it does not exist", async () => {
+    const skill = await upsertSkill({
+      name: "new-skill-upsert",
+      displayName: "New Skill",
+      description: "A new skill",
+      content: "# New",
+    });
+    expect(skill.name).toBe("new-skill-upsert");
+    expect(skill.embedding).not.toBeNull();
+  });
+
+  it("updates a skill if it already exists", async () => {
+    await upsertSkill({
+      name: "existing-upsert",
+      displayName: "V1",
+      description: "version 1",
+      content: "# V1",
+    });
+    const updated = await upsertSkill({
+      name: "existing-upsert",
+      displayName: "V2",
+      description: "version 2",
+      content: "# V2",
+    });
+    expect(updated.displayName).toBe("V2");
+    expect(updated.embedding).not.toBeNull();
   });
 });
