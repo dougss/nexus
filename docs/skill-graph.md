@@ -31,4 +31,5 @@ graph TD
     systematic_debugging --> verification_before_completion
     verification_before_completion --> requesting_code_review
     writing_plans --> subagent_driven_development
+    writing_plans --> executing_plans
 ```

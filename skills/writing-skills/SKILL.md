@@ -31,6 +31,7 @@ Skills are reusable techniques, patterns, and tools that:
 ## When to Create Skills vs When Not To
 
 **CREATE skills when:**
+
 - A pattern repeats across multiple contexts
 - A process consistently trips people up
 - A technique solves a significant class of problems
@@ -38,6 +39,7 @@ Skills are reusable techniques, patterns, and tools that:
 - There's a systematic approach that helps with compliance
 
 **DON'T create skills when:**
+
 - It's a one-off situation
 - The solution is obvious to anyone with basic experience
 - The context is too specific or unique
@@ -47,14 +49,17 @@ Skills are reusable techniques, patterns, and tools that:
 ## Skill Types
 
 ### Technique Skills
+
 - Specific methods for accomplishing tasks
 - Example: "test-driven-development", "systematic-debugging"
 
-### Pattern Skills  
+### Pattern Skills
+
 - General approaches that apply across domains
 - Example: "brainstorming", "verification"
 
 ### Reference Skills
+
 - Curated collections of information
 - Example: "ui-ux-pro-max"
 
@@ -71,6 +76,7 @@ whenToUse: Use when [activation trigger — max 250 chars]
 ```
 
 Content sections:
+
 - Overview with core principle
 - Required enforcement mechanisms (HARD-GATE, Iron Law, or Red Flags)
 - Process steps or methodology
@@ -88,52 +94,58 @@ Structure skills for optimal retrieval:
 
 ## The Iron Law
 
-<FORCEFUL>
+<IRON-LAW>
 NO SKILL WITHOUT A FAILING TEST FIRST
-</FORCEFUL>
+</IRON-LAW>
 
 Before writing a skill, create a test case that demonstrates the problem the skill solves. This ensures you're solving the right problem with the right approach.
 
 ## Testing Approaches for Different Skill Types
 
 ### Technique Skills
+
 - Create pressure scenarios that challenge the technique
 - Test edge cases and failure conditions
 - Verify the technique actually solves the problem
 
 ### Pattern Skills
+
 - Test with different domains and contexts
 - Verify the pattern is generalizable
 - Check that it provides meaningful guidance
 
 ### Reference Skills
+
 - Test that information is accurate and up-to-date
 - Verify the organization makes sense for retrieval
 - Confirm completeness of the reference material
 
 ## Common Rationalizations and Bulletproofing
 
-| Rationalization | Reality |
-|-----------------|---------|
-| "This is too simple for a skill" | Simple things often need skills most. |
-| "Users will figure it out" | If they could figure it out, no skill needed. |
-| "I don't have time to write it properly" | Time spent now saves time later. |
-| "Someone else should write this skill" | If you see the need, you're the right person. |
+| Rationalization                          | Reality                                       |
+| ---------------------------------------- | --------------------------------------------- |
+| "This is too simple for a skill"         | Simple things often need skills most.         |
+| "Users will figure it out"               | If they could figure it out, no skill needed. |
+| "I don't have time to write it properly" | Time spent now saves time later.              |
+| "Someone else should write this skill"   | If you see the need, you're the right person. |
 
 ## RED-GREEN-REFACTOR Cycle for Skills
 
 ### RED: Define the Problem
+
 - Create a test scenario that demonstrates the problem
 - Articulate the specific challenge users face
 - Verify the problem is significant enough for a skill
 
 ### GREEN: Create the Skill
+
 - Write the skill following the standard structure
 - Include at least one enforcement mechanism
 - Link to relevant other skills
 - Ensure it solves the defined problem
 
 ### REFACTOR: Improve Based on Use
+
 - Gather feedback from actual usage
 - Refine language and structure
 - Add missing elements or clarify confusing parts
@@ -162,6 +174,7 @@ Before writing a skill, create a test case that demonstrates the problem the ski
 ## Nexus-Specific Updates
 
 After creating a skill:
+
 1. Update `skills/using-nexus/SKILL.md` to add the new skill to the "Available Skills" list
 2. Run `./bin/nexus validate` to verify the new skill passes all checks
 3. Test that the skill integrates properly with the system

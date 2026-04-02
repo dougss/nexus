@@ -131,17 +131,19 @@ function validate() {
     }
 
     // Placeholders
-    for (const pattern of ["TBD", "TODO", "..."]) {
+    for (const pattern of ["TBD", "TODO"]) {
       if (skill.body.includes(pattern)) {
-        // Exclude '...' in code blocks and tables
-        if (
-          pattern === "..." &&
-          (skill.body.includes("```") || skill.body.includes("|"))
-        )
-          continue;
         console.error(`${prefix} ERROR — contains placeholder "${pattern}"`);
         errors++;
         break;
+      }
+    }
+    // Check '...' only outside fenced code blocks
+    {
+      const bodyWithoutCodeBlocks = skill.body.replace(/```[\s\S]*?```/g, "");
+      if (bodyWithoutCodeBlocks.includes("...")) {
+        console.error(`${prefix} ERROR — contains placeholder "..." outside code blocks`);
+        errors++;
       }
     }
 
@@ -254,22 +256,22 @@ function graph() {
   const edges = [];
 
   for (const skill of skills) {
-    // Find REQUIRED SUB-SKILL references
+    // Find REQUIRED SUB-SKILL references (capture all nexus: on each matching line)
     const subSkillRefs =
-      skill.content.match(/REQUIRED SUB-SKILL[^`\n]*nexus:([\w-]+)/g) || [];
+      skill.content.match(/REQUIRED SUB-SKILL[^`\n]*nexus:[\w-]+[^\n]*/g) || [];
     for (const ref of subSkillRefs) {
-      const match = ref.match(/nexus:([\w-]+)/);
-      if (match)
-        edges.push({ from: skill.dir, to: match[1], type: "required" });
+      const matches = ref.match(/nexus:([\w-]+)/g) || [];
+      for (const m of matches)
+        edges.push({ from: skill.dir, to: m.replace("nexus:", ""), type: "required" });
     }
 
-    // Find terminal state references
+    // Find terminal state references (capture all nexus: on each matching line)
     const terminalRefs =
-      skill.content.match(/terminal state[^`\n]*nexus:([\w-]+)/gi) || [];
+      skill.content.match(/terminal state[^`\n]*nexus:[\w-]+[^\n]*/gi) || [];
     for (const ref of terminalRefs) {
-      const match = ref.match(/nexus:([\w-]+)/);
-      if (match)
-        edges.push({ from: skill.dir, to: match[1], type: "terminal" });
+      const matches = ref.match(/nexus:([\w-]+)/g) || [];
+      for (const m of matches)
+        edges.push({ from: skill.dir, to: m.replace("nexus:", ""), type: "terminal" });
     }
   }
 

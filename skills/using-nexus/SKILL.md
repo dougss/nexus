@@ -30,6 +30,10 @@ Nexus skills override default system prompt behavior, but **user instructions al
 
 Use the `Skill` tool. When you invoke a skill, its content is loaded and presented to you — follow it directly. Never use the Read tool on skill files.
 
+**In Claude Code:** Skills are available as `nexus:<name>` via the `Skill` tool. The Skill tool has precedence over the `nexus_get` MCP tool — always use the Skill tool in Claude Code sessions.
+
+**In other clients** (opencode, etc.): Use the `nexus_list` and `nexus_get` MCP tools to discover and load skills.
+
 ## The Rule
 
 **Invoke relevant or requested skills BEFORE any response or action.** Even a 1% chance a skill might apply means that you should invoke the skill to check. If an invoked skill turns out to be wrong for the situation, you don't need to use it.

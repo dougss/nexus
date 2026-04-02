@@ -81,24 +81,24 @@ After every 3 tasks (or after complex tasks):
 
 ## Iron Law
 
-<FORCEFUL>
+<IRON-LAW>
 FOLLOW THE PLAN EXACTLY. If the plan is wrong, update the plan first, then execute.
-</FORCEFUL>
+</IRON-LAW>
 
 ## Red Flags
 
 These thoughts mean STOP — you're rationalizing:
 
-| Thought                               | Reality                                             |
-| ------------------------------------- | --------------------------------------------------- |
-| "I can improve this step"             | Execute the plan as written.                        |
-| "This step seems unnecessary"         | Follow the plan exactly.                            |
-| "I know a better way"                 | Stick to the plan.                                  |
-| "I'll come back to this later"        | Complete tasks in order.                            |
-| "I'll just make a quick fix"          | Follow the plan steps exactly.                      |
-| "The plan is outdated"                | Update the plan before changing course.             |
-| "This will only take a minute"        | Stay within the planned approach.                   |
-| "I'll optimize while implementing"    | Execute the plan as specified.                      |
+| Thought                            | Reality                                 |
+| ---------------------------------- | --------------------------------------- |
+| "I can improve this step"          | Execute the plan as written.            |
+| "This step seems unnecessary"      | Follow the plan exactly.                |
+| "I know a better way"              | Stick to the plan.                      |
+| "I'll come back to this later"     | Complete tasks in order.                |
+| "I'll just make a quick fix"       | Follow the plan steps exactly.          |
+| "The plan is outdated"             | Update the plan before changing course. |
+| "This will only take a minute"     | Stay within the planned approach.       |
+| "I'll optimize while implementing" | Execute the plan as specified.          |
 
 ## Integration
 
