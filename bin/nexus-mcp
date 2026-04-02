@@ -1,0 +1,177 @@
+#!/usr/bin/env node
+// Nexus MCP server — zero dependencies, JSON-RPC 2.0 over stdio
+// Exposes nexus_list and nexus_get tools for any MCP-compatible client
+
+import { readFileSync, readdirSync, existsSync } from "node:fs";
+import { join, dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+import { createInterface } from "node:readline";
+
+const __filename = fileURLToPath(import.meta.url);
+const ROOT = resolve(dirname(__filename), "..");
+const SKILLS_DIR = join(ROOT, "skills");
+
+// --- Frontmatter parser ---
+
+function parseFrontmatter(content) {
+  const lines = content.split("\n");
+  if (lines[0].trim() !== "---") return { frontmatter: {}, body: content };
+  let end = -1;
+  for (let i = 1; i < lines.length; i++) {
+    if (lines[i].trim() === "---") { end = i; break; }
+  }
+  if (end === -1) return { frontmatter: {}, body: content };
+  const fm = {};
+  for (let i = 1; i < end; i++) {
+    const match = lines[i].match(/^(\w[\w-]*):\s*(.+)$/);
+    if (match) fm[match[1]] = match[2].replace(/^["']|["']$/g, "");
+  }
+  return { frontmatter: fm, body: lines.slice(end + 1).join("\n") };
+}
+
+// --- Skill discovery ---
+
+function listSkills() {
+  if (!existsSync(SKILLS_DIR)) return [];
+  return readdirSync(SKILLS_DIR, { withFileTypes: true })
+    .filter((e) => e.isDirectory())
+    .flatMap((e) => {
+      const skillFile = join(SKILLS_DIR, e.name, "SKILL.md");
+      if (!existsSync(skillFile)) return [];
+      const { frontmatter } = parseFrontmatter(readFileSync(skillFile, "utf-8"));
+      return [{
+        name: frontmatter.name || e.name,
+        description: frontmatter.description || "",
+        whenToUse: frontmatter.whenToUse || "",
+      }];
+    });
+}
+
+function getSkill(name) {
+  const skillFile = join(SKILLS_DIR, name, "SKILL.md");
+  if (!existsSync(skillFile)) return null;
+  return readFileSync(skillFile, "utf-8");
+}
+
+// --- MCP tool definitions ---
+
+const TOOLS = [
+  {
+    name: "nexus_list",
+    description:
+      "List all available Nexus workflow skills with name, description, and whenToUse trigger. " +
+      "Call this at the start of any task to discover which skills are relevant. " +
+      "Each skill has an activation trigger in whenToUse — match it against your current task.",
+    inputSchema: { type: "object", properties: {}, required: [] },
+  },
+  {
+    name: "nexus_get",
+    description:
+      "Get the full content of a Nexus skill by name. Returns the complete SKILL.md with " +
+      "instructions, enforcement patterns (Iron Laws, HARD-GATEs, Red Flags), and workflow chains " +
+      "to sub-skills. Follow the skill instructions exactly.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        name: {
+          type: "string",
+          description:
+            "Skill directory name, e.g. 'brainstorming', 'test-driven-development', 'systematic-debugging'",
+        },
+      },
+      required: ["name"],
+    },
+  },
+];
+
+// --- JSON-RPC 2.0 handler ---
+
+function respond(id, result) {
+  return { jsonrpc: "2.0", id, result };
+}
+
+function error(id, code, message) {
+  return { jsonrpc: "2.0", id, error: { code, message } };
+}
+
+function handle(req) {
+  const { id, method, params } = req;
+
+  if (method === "initialize") {
+    return respond(id, {
+      protocolVersion: "2024-11-05",
+      capabilities: { tools: {} },
+      serverInfo: { name: "nexus", version: "2.0.0" },
+    });
+  }
+
+  if (method === "notifications/initialized") return null;
+
+  if (method === "ping") return respond(id, {});
+
+  if (method === "tools/list") {
+    return respond(id, { tools: TOOLS });
+  }
+
+  if (method === "tools/call") {
+    const { name, arguments: args = {} } = params ?? {};
+
+    if (name === "nexus_list") {
+      const skills = listSkills();
+      return respond(id, {
+        content: [{ type: "text", text: JSON.stringify(skills, null, 2) }],
+      });
+    }
+
+    if (name === "nexus_get") {
+      const skillName = args.name;
+      if (!skillName) {
+        return respond(id, {
+          content: [{ type: "text", text: "Missing required parameter: name" }],
+          isError: true,
+        });
+      }
+      const content = getSkill(skillName);
+      if (!content) {
+        const available = listSkills().map((s) => s.name).join(", ");
+        return respond(id, {
+          content: [{ type: "text", text: `Skill '${skillName}' not found. Available: ${available}` }],
+          isError: true,
+        });
+      }
+      return respond(id, {
+        content: [{ type: "text", text: content }],
+      });
+    }
+
+    return error(id, -32601, `Unknown tool: ${name}`);
+  }
+
+  // Unknown method — return error for requests, ignore for notifications
+  if (id !== undefined) return error(id, -32601, `Method not found: ${method}`);
+  return null;
+}
+
+// --- stdio transport ---
+
+const rl = createInterface({ input: process.stdin, terminal: false });
+
+rl.on("line", (line) => {
+  const trimmed = line.trim();
+  if (!trimmed) return;
+  let req;
+  try {
+    req = JSON.parse(trimmed);
+  } catch {
+    process.stdout.write(
+      JSON.stringify(error(null, -32700, "Parse error")) + "\n"
+    );
+    return;
+  }
+  const res = handle(req);
+  if (res !== null) {
+    process.stdout.write(JSON.stringify(res) + "\n");
+  }
+});
+
+rl.on("close", () => process.exit(0));
