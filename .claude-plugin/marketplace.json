@@ -1,0 +1,18 @@
+{
+  "name": "nexus",
+  "owner": {
+    "name": "Douglas Souza"
+  },
+  "metadata": {
+    "description": "Nexus — skill-driven workflows for Claude Code",
+    "homepage": "https://github.com/dougss/nexus"
+  },
+  "plugins": [
+    {
+      "name": "nexus",
+      "version": "2.0.0",
+      "source": ".",
+      "description": "Nexus — skill-driven workflows via Markdown + SessionStart hook"
+    }
+  ]
+}

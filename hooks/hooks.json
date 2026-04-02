@@ -1,7 +1,17 @@
-[
-  {
-    "event": "SessionStart",
-    "command": "./hooks/session-start",
-    "timeout": 5000
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|clear|compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/session-start",
+            "timeout": 5000,
+            "async": false
+          }
+        ]
+      }
+    ]
   }
-]
+}
