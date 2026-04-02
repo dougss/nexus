@@ -11,7 +11,10 @@
     {
       "name": "nexus",
       "version": "2.0.0",
-      "source": ".",
+      "source": {
+        "source": "url",
+        "url": "https://github.com/dougss/nexus.git"
+      },
       "description": "Nexus — skill-driven workflows via Markdown + SessionStart hook"
     }
   ]
