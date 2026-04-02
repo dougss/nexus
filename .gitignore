@@ -2,3 +2,8 @@ node_modules/
 dist/
 .env
 *.log
+
+# === Claude Code Workflow ===
+.claude/plans/
+.claude/local/
+.claude/.cache/

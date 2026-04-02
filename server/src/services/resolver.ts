@@ -46,21 +46,7 @@ export async function resolve(
 ): Promise<ResolveResult> {
   const result: ResolveResult = { workflow: [], context: [], related: [] };
 
-  // 1. Build workflow chain if phase provided
-  if (phase) {
-    const chain = await traverseExtends(phase);
-    result.workflow = chain.map((skill, i) => ({
-      phase: skill.name,
-      status: i === 0 ? ("current" as const) : ("next" as const),
-      skill: {
-        name: skill.name,
-        displayName: skill.displayName,
-        content: skill.content,
-      },
-    }));
-  }
-
-  // 2. Semantic search via embeddings
+  // 1. Generate embedding first (needed for both workflow detection and semantic search)
   let embedding: number[] | null = null;
   try {
     embedding = await generateEmbedding(intent);
@@ -75,6 +61,25 @@ export async function resolve(
   const db = getDb();
   const vectorStr = `[${embedding.join(",")}]`;
 
+  // 2. Resolve workflow phase: explicit > auto-detected from extends graph
+  const resolvedPhase =
+    phase ??
+    (await autoDetectPhase(db, vectorStr, SIMILARITY_THRESHOLD, intent));
+
+  if (resolvedPhase) {
+    const chain = await traverseExtends(resolvedPhase);
+    result.workflow = chain.map((skill, i) => ({
+      phase: skill.name,
+      status: i === 0 ? ("current" as const) : ("next" as const),
+      skill: {
+        name: skill.name,
+        displayName: skill.displayName,
+        content: skill.content,
+      },
+    }));
+  }
+
+  // 3. Semantic search for context and related skills
   const similar = await db.execute(sql`
     SELECT
       name,
@@ -113,6 +118,108 @@ export async function resolve(
   }
 
   return result;
+}
+
+// Keyword → workflow phase mappings (checked in order, first match wins)
+const KEYWORD_PHASE_MAP: Array<{ keywords: string[]; phase: string }> = [
+  {
+    keywords: ["implement", "execute", "build", "develop", "coding", "code up"],
+    phase: "executing-plans",
+  },
+  {
+    keywords: [
+      "debug",
+      "fix bug",
+      "fix error",
+      "broken",
+      "not working",
+      "failing",
+    ],
+    phase: "systematic-debugging",
+  },
+  {
+    keywords: [
+      "write plan",
+      "create plan",
+      "decompose",
+      "break down tasks",
+      "task list",
+    ],
+    phase: "writing-plans",
+  },
+  {
+    keywords: ["spec", "specification", "requirements", "formalize"],
+    phase: "spec-writing",
+  },
+  {
+    keywords: ["stress test", "challenge assumptions", "poke holes", "grill"],
+    phase: "grill-me",
+  },
+  {
+    keywords: [
+      "review code",
+      "code review",
+      "pr review",
+      "pull request review",
+    ],
+    phase: "code-review",
+  },
+  {
+    keywords: ["verify", "verification", "confirm output", "check output"],
+    phase: "verification",
+  },
+  {
+    keywords: [
+      "brainstorm",
+      "explore ideas",
+      "design feature",
+      "new feature",
+      "ideate",
+    ],
+    phase: "brainstorming",
+  },
+];
+
+function detectPhaseFromKeywords(intent: string): string | null {
+  const lower = intent.toLowerCase();
+  for (const { keywords, phase } of KEYWORD_PHASE_MAP) {
+    if (keywords.some((k) => lower.includes(k))) return phase;
+  }
+  return null;
+}
+
+/**
+ * Auto-detect the most relevant workflow phase for the given intent.
+ * First tries keyword matching, then falls back to semantic similarity
+ * restricted to skills that have `extends` relations (real workflow phases).
+ */
+async function autoDetectPhase(
+  db: ReturnType<typeof getDb>,
+  vectorStr: string,
+  threshold: number,
+  intent: string,
+): Promise<string | null> {
+  // 1. Keyword-based detection (fast, deterministic)
+  const keywordPhase = detectPhaseFromKeywords(intent);
+  if (keywordPhase) return keywordPhase;
+
+  // 2. Semantic fallback: most similar skill that has extends relations
+  const rows = await db.execute(sql`
+    SELECT s.name, 1 - (s.embedding <=> ${vectorStr}::vector) as similarity
+    FROM skills s
+    WHERE s.embedding IS NOT NULL
+      AND EXISTS (
+        SELECT 1 FROM skill_relations sr
+        WHERE sr.source_id = s.id AND sr.relation_type = 'extends'
+      )
+    ORDER BY s.embedding <=> ${vectorStr}::vector
+    LIMIT 1
+  `);
+
+  if (rows.rows.length === 0) return null;
+  const top = rows.rows[0] as { name: string; similarity: string };
+  const similarity = parseFloat(top.similarity);
+  return similarity >= threshold ? top.name : null;
 }
 
 async function fallbackResolve(

@@ -124,10 +124,13 @@ type UpsertSkillInput = {
 export async function upsertSkill(input: UpsertSkillInput) {
   const db = getDb();
 
-  // Generate embedding from content
+  // Generate embedding from content (truncated to ~6000 chars for nomic-embed-text context limit)
+  const MAX_EMBED_CHARS = 6000;
   let embedding: number[] | null = null;
   try {
-    const textForEmbedding = `${input.displayName}\n${input.description}\n${input.content}`;
+    const raw = `${input.displayName}\n${input.description}\n${input.content}`;
+    const textForEmbedding =
+      raw.length > MAX_EMBED_CHARS ? raw.slice(0, MAX_EMBED_CHARS) : raw;
     embedding = await generateEmbedding(textForEmbedding);
   } catch (e) {
     console.error("Embedding generation failed, saving without embedding:", e);

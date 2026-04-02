@@ -20,8 +20,11 @@ async function backfill() {
 
   console.log(`Found ${toProcess.length} skills without embeddings`);
 
+  const MAX_EMBED_CHARS = 6000;
   for (const skill of toProcess) {
-    const text = `${skill.displayName}\n${skill.description}\n${skill.content}`;
+    const raw = `${skill.displayName}\n${skill.description}\n${skill.content}`;
+    const text =
+      raw.length > MAX_EMBED_CHARS ? raw.slice(0, MAX_EMBED_CHARS) : raw;
     try {
       const embedding = await generateEmbedding(text);
       const vectorStr = `[${embedding.join(",")}]`;

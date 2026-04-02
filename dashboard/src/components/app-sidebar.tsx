@@ -26,9 +26,30 @@ const navItems = [
 export function AppSidebar() {
   return (
     <Sidebar collapsible="icon" className="border-r border-sidebar-border">
-      <SidebarHeader className="p-2">
-        <div className="flex h-8 items-center justify-center font-mono text-sm font-semibold text-sidebar-primary group-data-[collapsible=icon]:hidden">
-          Nexus
+      <SidebarHeader className="border-b border-sidebar-border px-3 py-4">
+        {/* Expanded: logo + name */}
+        <div className="flex items-center gap-3 group-data-[collapsible=icon]:hidden">
+          <img
+            src="/android-chrome-192x192.png"
+            alt="Nexus"
+            className="size-9 rounded-xl shrink-0"
+          />
+          <div className="flex flex-col leading-tight">
+            <span className="font-mono text-base font-semibold text-sidebar-primary">
+              Nexus
+            </span>
+            <span className="text-xs text-muted-foreground">
+              Skills Registry
+            </span>
+          </div>
+        </div>
+        {/* Collapsed: icon only */}
+        <div className="hidden group-data-[collapsible=icon]:flex items-center justify-center">
+          <img
+            src="/favicon-32x32.png"
+            alt="Nexus"
+            className="size-6 rounded-md"
+          />
         </div>
       </SidebarHeader>
       <SidebarContent>

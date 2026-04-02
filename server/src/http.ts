@@ -22,7 +22,6 @@ async function main() {
     await app.register(fastifyStatic, {
       root: dashboardDist,
       prefix: "/",
-      wildcard: false,
     });
 
     // SPA fallback: serve index.html for non-API routes

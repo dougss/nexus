@@ -1,0 +1,29 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(*)",
+      "Edit(*)",
+      "Write(*)",
+      "Bash(git *)",
+      "Bash(npm install *)",
+      "Bash(npm run dev *)",
+      "Bash(npm run build *)",
+      "Bash(npm run test *)",
+      "Bash(npm run test:watch *)",
+      "Bash(npm run db:generate *)",
+      "Bash(npm run db:migrate *)",
+      "Bash(npx tsx src/scripts/*)",
+      "Bash(npx tsx *)",
+      "Bash(cd server && *)",
+      "Bash(cd dashboard && *)"
+    ],
+    "deny": [
+      "Bash(rm -rf /)",
+      "Bash(npm publish)",
+      "Bash(git push --force)",
+      "Bash(git push --force-with-lease)",
+      "Bash(drizzle-kit drop *)",
+      "Bash(docker exec postgres psql * DROP DATABASE *)"
+    ]
+  }
+}
