@@ -1,0 +1,7 @@
+[
+  {
+    "event": "SessionStart",
+    "command": "./hooks/session-start",
+    "timeout": 5000
+  }
+]

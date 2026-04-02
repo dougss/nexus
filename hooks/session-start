@@ -1,0 +1,24 @@
+#!/bin/bash
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+SKILL_FILE="$SCRIPT_DIR/skills/using-nexus/SKILL.md"
+
+if [ ! -f "$SKILL_FILE" ]; then
+  echo '{}' >&2
+  exit 0
+fi
+
+CONTENT=$(cat "$SKILL_FILE")
+
+# Escape for JSON: backslashes, quotes, newlines, tabs
+ESCAPED=$(printf '%s' "$CONTENT" | sed 's/\\/\\\\/g; s/"/\\"/g; s/	/\\t/g' | awk '{printf "%s\\n", $0}' | sed '$ s/\\n$//')
+
+cat <<HOOK_JSON
+{
+  "hookSpecificOutput": {
+    "hookEventName": "SessionStart",
+    "additionalContext": "<EXTREMELY_IMPORTANT>\nYou have Nexus skills available.\n\n**Below is the full content of your 'nexus:using-nexus' skill — your introduction to using skills. For all other skills, use the 'Skill' tool:**\n\n---\n${ESCAPED}\n\n</EXTREMELY_IMPORTANT>"
+  }
+}
+HOOK_JSON

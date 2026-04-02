@@ -1,0 +1,7 @@
+{
+  "name": "nexus",
+  "version": "2.0.0",
+  "description": "Nexus — skill-driven workflows for Claude Code",
+  "skills": "./skills/",
+  "hooks": "./hooks/hooks.json"
+}

@@ -1,10 +1,9 @@
 {
   "name": "nexus",
-  "version": "1.0.0",
-  "private": true,
+  "version": "2.0.0",
+  "description": "Skill-driven workflows for Claude Code",
   "type": "module",
-  "workspaces": [
-    "server",
-    "dashboard"
-  ]
+  "bin": {
+    "nexus": "./bin/nexus"
+  }
 }
