@@ -1,9 +1,15 @@
 {
   "name": "nexus",
   "version": "2.0.0",
-  "description": "Skill-driven workflows for Claude Code",
+  "private": true,
   "type": "module",
-  "bin": {
-    "nexus": "./bin/nexus"
+  "description": "Markdown skills + Node.js MCP stdio server + CLI (zero runtime deps)",
+  "scripts": {
+    "validate": "node bin/nexus validate",
+    "graph": "node bin/nexus graph",
+    "ci": "node bin/nexus validate"
+  },
+  "engines": {
+    "node": ">=22"
   }
 }
