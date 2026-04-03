@@ -7,6 +7,8 @@ graph TD
     brainstorming["brainstorming"]
     executing_plans["executing-plans"]
     finishing_a_development_branch["finishing-a-development-branch"]
+    github_public_repo_security["github-public-repo-security"]
+    playwright_cli["playwright-cli"]
     requesting_code_review["requesting-code-review"]
     subagent_driven_development["subagent-driven-development"]
     systematic_debugging["systematic-debugging"]

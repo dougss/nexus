@@ -28,11 +28,12 @@ Nexus skills override default system prompt behavior, but **user instructions al
 
 ## How to Access Skills
 
-Use the `Skill` tool. When you invoke a skill, its content is loaded and presented to you — follow it directly. Never use the Read tool on skill files.
+Use the `nexus_get` MCP tool. When you invoke a skill, its content is loaded and presented to you — follow it directly.
 
-**In Claude Code:** Skills are available as `nexus:<name>` via the `Skill` tool. The Skill tool has precedence over the `nexus_get` MCP tool — always use the Skill tool in Claude Code sessions.
+- `nexus_list` — lista todas as skills disponíveis com nome, descrição e gatilho `whenToUse`
+- `nexus_get(name)` — carrega o conteúdo completo de uma skill (ex: `nexus_get("brainstorming")`)
 
-**In other clients** (opencode, etc.): Use the `nexus_list` and `nexus_get` MCP tools to discover and load skills.
+Never use the Read tool on skill files.
 
 ## The Rule
 
@@ -89,6 +90,8 @@ The skill itself tells you which.
 - nexus:using-git-worktrees — Use when starting feature work that needs isolation from current workspace
 - nexus:writing-skills — Use when creating new skills, editing existing skills, or verifying skills work
 - nexus:ui-ux-pro-max — Use when designing UI/UX — layouts, styles, palettes, fonts, charts, components
+- nexus:playwright-cli — Use when you need to automate browser actions, capture screenshots, generate test code, or run end-to-end tests via CLI
+- nexus:github-public-repo-security — Use when open-sourcing a repo, hardening a public GitHub project, or configuring Dependabot, Actions CI, CodeQL, rulesets, and gh-based security settings
 
 ## User Instructions
 
