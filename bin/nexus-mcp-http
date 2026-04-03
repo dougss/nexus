@@ -1,0 +1,140 @@
+#!/usr/bin/env node
+// Nexus MCP server — HTTP transport
+// Supports both MCP transports:
+//   - Streamable HTTP (POST /)     — MCP spec 2025-03-26, used by Cursor
+//   - SSE (GET /sse + POST /message) — legacy SSE transport, fallback
+//
+// Health check: GET /health
+
+import { createServer } from "node:http";
+import { randomUUID } from "node:crypto";
+import { handle, rpcError } from "./nexus-core.js";
+
+const PORT = Number(process.env.PORT ?? 3005);
+const HOST = process.env.HOST ?? "0.0.0.0";
+
+// sessionId → SSE response object (legacy SSE sessions)
+const sessions = new Map();
+
+function sendSSE(res, data) {
+  res.write(`event: message\ndata: ${JSON.stringify(data)}\n\n`);
+}
+
+function readBody(req) {
+  return new Promise((resolve, reject) => {
+    let body = "";
+    req.on("data", (chunk) => (body += chunk));
+    req.on("end", () => resolve(body));
+    req.on("error", reject);
+  });
+}
+
+const server = createServer(async (req, res) => {
+  const url = new URL(req.url, `http://${req.headers.host}`);
+
+  // CORS — allow any origin on the local network
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Accept");
+
+  if (req.method === "OPTIONS") {
+    res.writeHead(204);
+    res.end();
+    return;
+  }
+
+  // ---------------------------------------------------------------
+  // Streamable HTTP transport (MCP spec 2025-03-26)
+  // Cursor and newer clients use this: POST / with JSON-RPC body
+  // ---------------------------------------------------------------
+  if (req.method === "POST" && url.pathname === "/") {
+    let rpc;
+    try {
+      rpc = JSON.parse(await readBody(req));
+    } catch {
+      res.writeHead(400, { "Content-Type": "application/json" });
+      res.end(JSON.stringify(rpcError(null, -32700, "Parse error")));
+      return;
+    }
+
+    const response = handle(rpc);
+
+    if (response === null) {
+      // Notification — no response body
+      res.writeHead(204);
+      res.end();
+    } else {
+      res.writeHead(200, { "Content-Type": "application/json" });
+      res.end(JSON.stringify(response));
+    }
+    return;
+  }
+
+  // ---------------------------------------------------------------
+  // Legacy SSE transport — GET /sse opens stream, POST /message sends requests
+  // ---------------------------------------------------------------
+  if (req.method === "GET" && url.pathname === "/sse") {
+    const sessionId = randomUUID();
+    const host = req.headers.host || `192.168.1.100:${PORT}`;
+
+    res.writeHead(200, {
+      "Content-Type": "text/event-stream",
+      "Cache-Control": "no-cache",
+      Connection: "keep-alive",
+    });
+
+    sessions.set(sessionId, res);
+    req.on("close", () => sessions.delete(sessionId));
+
+    // Send full URL (no quotes) — client will POST here
+    res.write(`event: endpoint\ndata: http://${host}/message?sessionId=${sessionId}\n\n`);
+    return;
+  }
+
+  if (req.method === "POST" && url.pathname === "/message") {
+    const sessionId = url.searchParams.get("sessionId");
+    const sse = sessions.get(sessionId);
+
+    if (!sse) {
+      res.writeHead(404, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ error: "Session not found" }));
+      return;
+    }
+
+    let rpc;
+    try {
+      rpc = JSON.parse(await readBody(req));
+    } catch {
+      res.writeHead(400, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ error: "Invalid JSON" }));
+      sendSSE(sse, rpcError(null, -32700, "Parse error"));
+      return;
+    }
+
+    res.writeHead(202, { "Content-Type": "application/json" });
+    res.end(JSON.stringify({ result: "accepted" }));
+
+    const response = handle(rpc);
+    if (response !== null) sendSSE(sse, response);
+    return;
+  }
+
+  // ---------------------------------------------------------------
+  // Health check
+  // ---------------------------------------------------------------
+  if (req.method === "GET" && url.pathname === "/health") {
+    res.writeHead(200, { "Content-Type": "application/json" });
+    res.end(JSON.stringify({ status: "ok", version: "2.0.0", transports: ["streamable-http", "sse"] }));
+    return;
+  }
+
+  res.writeHead(404, { "Content-Type": "application/json" });
+  res.end(JSON.stringify({ error: "not_found" }));
+});
+
+server.listen(PORT, HOST, () => {
+  console.log(`Nexus MCP HTTP server listening on ${HOST}:${PORT}`);
+  console.log(`Streamable HTTP: http://192.168.1.100:${PORT}/`);
+  console.log(`SSE:             http://192.168.1.100:${PORT}/sse`);
+  console.log(`Health:          http://192.168.1.100:${PORT}/health`);
+});

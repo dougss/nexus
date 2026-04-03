@@ -16,6 +16,17 @@ Do NOT write implementation code during planning. The plan IS the deliverable.
 
 Write comprehensive implementation plans assuming the engineer has zero context. Document everything: which files to touch, code, testing, docs. Give the whole plan as bite-sized tasks. DRY. YAGNI. TDD. Frequent commits.
 
+## SPEC_REF Input
+
+If invoked with a `SPEC_REF:` block (output of nexus:brainstorming), **read `specs/<slug>/spec.md` before writing the plan** — the spec is the source of truth for requirements and scope.
+
+```
+SPEC_REF: specs/<slug>
+spec:     specs/<slug>/spec.md
+```
+
+If no SPEC_REF is provided, derive the slug from the feature description using `kebab-case`.
+
 ## Scope Check
 
 If the spec covers multiple independent subsystems, break into separate plans — one per subsystem. Each plan should produce working, testable software on its own.
@@ -46,7 +57,8 @@ Before defining tasks, map out which files will be created or modified:
 **Goal:** [One sentence describing what this builds]
 **Architecture:** [2-3 sentences about approach]
 **Tech Stack:** [Key technologies/libraries]
-**Spec:** [Link to spec document]
+**Spec:** specs/<slug>/spec.md
+**Plan:** specs/<slug>/plan.md
 
 **REQUIRED SUB-SKILL:** nexus:subagent-driven-development (recommended for parallel execution) OR nexus:executing-plans (for sequential execution)
 ```
@@ -98,27 +110,44 @@ After writing the plan:
 
 Fix issues inline. If spec requirement has no task, add it.
 
+## Plan File Output
+
+Save plan to `specs/<slug>/plan.md`. Optionally extract the task checklist to `specs/<slug>/tasks.md` (one checkbox per task, no code).
+
+After saving, emit this SPEC_REF block:
+
+```
+---
+SPEC_REF: specs/<slug>
+spec:     specs/<slug>/spec.md  (if exists)
+plan:     specs/<slug>/plan.md
+tasks:    specs/<slug>/tasks.md (if generated)
+---
+```
+
+Pass this block verbatim when invoking execution skills — they will load the files automatically.
+
 ## Execution Handoff
 
-After the plan is complete, you have two options:
+After the plan is complete, pass the SPEC_REF block to one of:
 
-1. **Recommended:** nexus:subagent-driven-development — Execute the plan using fresh subagents per task with review checkpoints
-2. **Alternative:** nexus:executing-plans — Execute the plan sequentially yourself
+1. **Recommended:** nexus:subagent-driven-development — parallel execution with review checkpoints
+2. **Alternative:** nexus:executing-plans — sequential execution
 
 ## Red Flags
 
 These thoughts mean STOP — you're rationalizing:
 
-| Thought                                | Reality                                              |
-| -------------------------------------- | ---------------------------------------------------- |
-| "I'll just start coding"               | Write the plan first.                                |
-| "The plan is obvious"                  | Document everything explicitly.                      |
-| "I'll write the plan as I go"          | Complete the plan before implementation.             |
-| "This is too simple for a plan"        | All multi-step tasks need plans.                     |
-| "I can remember the steps"             | Explicit plans prevent mistakes.                     |
-| "The user knows what to do"            | The plan guides the implementation.                  |
-| "I'll figure it out as I code"         | Plans prevent scope creep and confusion.             |
-| "The spec is clear enough"             | Specs need translation to concrete implementation.   |
+| Thought                         | Reality                                            |
+| ------------------------------- | -------------------------------------------------- |
+| "I'll just start coding"        | Write the plan first.                              |
+| "The plan is obvious"           | Document everything explicitly.                    |
+| "I'll write the plan as I go"   | Complete the plan before implementation.           |
+| "This is too simple for a plan" | All multi-step tasks need plans.                   |
+| "I can remember the steps"      | Explicit plans prevent mistakes.                   |
+| "The user knows what to do"     | The plan guides the implementation.                |
+| "I'll figure it out as I code"  | Plans prevent scope creep and confusion.           |
+| "The spec is clear enough"      | Specs need translation to concrete implementation. |
 
 ## Integration
 

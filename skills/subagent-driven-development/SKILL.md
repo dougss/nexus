@@ -12,6 +12,16 @@ If you were dispatched as a subagent to execute a specific task, skip this skill
 
 Execute implementation plans using fresh subagents per task with review checkpoints. This approach allows for parallel execution of independent tasks while maintaining quality through review checkpoints.
 
+## SPEC_REF Input
+
+If the input contains a `SPEC_REF:` block (output of nexus:writing-plans):
+
+1. Read `specs/<slug>/spec.md` — pass requirements context to each subagent and reviewer
+2. Read `specs/<slug>/plan.md` — source of tasks to dispatch
+3. Read `specs/<slug>/tasks.md` if present — use as dispatch checklist
+
+Include the spec path in every subagent prompt so each agent has the requirements context.
+
 <IRON-LAW>
 NO SUBAGENT EXECUTION WITHOUT REVIEW CHECKPOINTS — Every batch of tasks must be reviewed before proceeding.
 </IRON-LAW>
@@ -49,7 +59,7 @@ graph LR
 
 Choose appropriate models for different task types:
 
-- **Cheap models (e.g., Sonnet 3.5)** for mechanical tasks: 
+- **Cheap models (e.g., Sonnet 3.5)** for mechanical tasks:
   - Writing boilerplate code
   - Updating configuration files
   - Creating basic tests

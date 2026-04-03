@@ -22,9 +22,10 @@ Every project goes through this process. A todo list, a single-function utility,
 2. **Ask clarifying questions** — one at a time, understand purpose/constraints/success criteria
 3. **Propose 2-3 approaches** — with trade-offs and your recommendation
 4. **Present design** — in sections scaled to their complexity, get user approval after each section
-5. **Write design doc** — save to `docs/specs/YYYY-MM-DD-<topic>-design.md` and commit
+5. **Write spec doc** — save to `specs/<slug>/spec.md` (derive slug from feature name: `kebab-case`)
 6. **Spec self-review** — check for placeholders, contradictions, ambiguity, scope
-7. **User reviews written spec** — ask user to review the spec file before proceeding
+7. **Emit SPEC_REF** — output the reference block so execution skills can locate the file
+8. **User reviews written spec** — ask user to review the spec file before proceeding
 
 ## The Process
 
@@ -127,11 +128,29 @@ As a [role], I want [goal] so that [benefit].
 3. **Scope check:** Focused enough for a single implementation plan?
 4. **Ambiguity check:** Could any requirement be interpreted two ways? Pick one and make it explicit.
 
+## Spec File Location
+
+Derive the slug from the feature name using `kebab-case` (e.g., `payment-integration`, `onboarding-wizard`).
+
+Save spec to: `specs/<slug>/spec.md` — create directory if needed.
+
+## SPEC_REF Output
+
+After writing and committing spec.md, emit this block as the final output of the skill:
+
+```
+---
+SPEC_REF: specs/<slug>
+spec:     specs/<slug>/spec.md
+plan:     (pending — invoke nexus:writing-plans to generate)
+---
+```
+
 ## User Review Gate
 
 After writing the spec, ask the user to review it before proceeding:
 
-"Please review the spec at `docs/specs/YYYY-MM-DD-<topic>-design.md` and let me know if you approve the approach before I proceed with implementation planning."
+"Please review the spec at `specs/<slug>/spec.md` and let me know if you approve the approach before I proceed with implementation planning."
 
 ## Key Principles
 
@@ -145,16 +164,16 @@ After writing the spec, ask the user to review it before proceeding:
 
 These thoughts mean STOP — you're rationalizing:
 
-| Thought                            | Reality                                               |
-| ---------------------------------- | ----------------------------------------------------- |
-| "This is just a simple change"     | All projects need design. Check first.                |
-| "I can implement quickly"          | Implementing without design leads to problems.        |
-| "I know exactly what to do"        | Present design to user before proceeding.             |
-| "I'll just make a small change"    | All changes need design review.                       |
-| "This doesn't need a spec"         | Specs prevent costly mistakes.                        |
-| "I'll write the design later"      | Design comes before implementation.                   |
-| "This is just a refactor"          | Refactors still need design consideration.            |
-| "The user knows what they want"    | Clarify details through the design process.           |
+| Thought                         | Reality                                        |
+| ------------------------------- | ---------------------------------------------- |
+| "This is just a simple change"  | All projects need design. Check first.         |
+| "I can implement quickly"       | Implementing without design leads to problems. |
+| "I know exactly what to do"     | Present design to user before proceeding.      |
+| "I'll just make a small change" | All changes need design review.                |
+| "This doesn't need a spec"      | Specs prevent costly mistakes.                 |
+| "I'll write the design later"   | Design comes before implementation.            |
+| "This is just a refactor"       | Refactors still need design consideration.     |
+| "The user knows what they want" | Clarify details through the design process.    |
 
 ## Integration
 

@@ -14,9 +14,19 @@ Load a written plan, review critically, execute all tasks with verification chec
 
 ## The Process
 
+### Step 0: Resolve SPEC_REF (if present)
+
+If the input contains a `SPEC_REF:` block (output of nexus:writing-plans or nexus:brainstorming):
+
+1. Read `specs/<slug>/spec.md` — use as requirements reference throughout execution
+2. Read `specs/<slug>/plan.md` — this is the plan to execute
+3. Read `specs/<slug>/tasks.md` if present — use as execution checklist
+
+If no SPEC_REF, load the plan from wherever it was provided.
+
 ### Step 1: Load and Review Plan
 
-1. Read plan file
+1. Read plan file (resolved above)
 2. Review critically — identify questions or concerns
 3. If concerns: raise with user before starting
 4. If no concerns: create task list and proceed
